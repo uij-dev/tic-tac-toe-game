@@ -2,15 +2,97 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.1">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=0.1" />
     <title>Tic-tac-toe | TOP Project</title>
-    <link rel="stylesheet" href="./css/fontfaces.css">
-    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/fontfaces.css" />
+    <link rel="stylesheet" href="./css/styles.css" />
     <script src="script.js" defer></script>
 </head>
 
 <body>
+    <header class="header">
+        <h1 class="game-title">
+            Tic <br />
+            Tac Toe
+        </h1>
+    </header>
+    <main class="main">
+        <div class="dashboard">
+            <div class="dashboard__player-info-display">
+                <div class="dashboard__player-name">
+                    <div class="dashboard__player-name-label">
+                        player one
+                    </div>
+                    <div class="dashboard__player-name-display p1-name-display">Thor</div>
+                </div>
+                <div class="dashboard__player-mark">
+                    <div class="dashboard__player-mark-label">mark</div>
+                    <div class="dashboard__player-mark-display">X</div>
+                </div>
+            </div>
+
+            <div class="dashboard__player-info-display">
+                <div class="dashboard__player-name">
+                    <div class="dashboard__player-name-label">
+                        player two
+                    </div>
+                    <div class="dashboard__player-name-display p2-name-display">loki</div>
+                </div>
+                <div class="dashboard__player-mark">
+                    <div class="dashboard__player-mark-label">mark</div>
+                    <div class="dashboard__player-mark-display">O</div>
+                </div>
+            </div>
+        </div>
+        <div class="msg-box"></div>
+        <div class="board">
+            <div class="board__square" data-row="0" data-column="0"><span class="board__square-mark"></span></div>
+            <div class="board__square" data-row="0" data-column="1"><span class="board__square-mark"></span></div>
+            <div class="board__square" data-row="0" data-column="2"><span class="board__square-mark"></span></div>
+
+            <div class="board__square" data-row="1" data-column="0"><span class="board__square-mark"></span></div>
+            <div class="board__square" data-row="1" data-column="1"><span class="board__square-mark"></span></div>
+            <div class="board__square" data-row="1" data-column="2"><span class="board__square-mark"></span></div>
+
+            <div class="board__square" data-row="2" data-column="0"><span class="board__square-mark"></span></div>
+            <div class="board__square" data-row="2" data-column="1"><span class="board__square-mark"></span></div>
+            <div class="board__square" data-row="2" data-column="2"><span class="board__square-mark"></span></div>
+        </div>
+        <dialog class="modal modal--page-load" closedby="none">
+            <form class="page-load-form" action="#" method="#">
+                <p class="page-load-form-para">These fields are optional, default settings will be used if you don't
+                    fill them.</p>
+                <fieldset class="page-load-form__plr-box">
+                    <legend class="page-load-form-legend">Player One settings</legend>
+                    <div>
+                        <label for="name-p1">Name:</label>
+                        <input type="text" id="name-p1" placeholder="Thor">
+                    </div>
+                </fieldset>
+
+                <fieldset class="page-load-form__plr-box">
+                    <legend class="page-load-form-legend">Player Two settings</legend>
+                    <div>
+                        <label for="name-p2">Name:</label>
+                        <input type="text" id="name-p2" placeholder="Loki">
+                    </div>
+                </fieldset>
+                <div class="page-load-form__btns">
+                    <button class="btn btn--start" type="submit">start</button>
+                    <button class="btn btn--cancel" type="button">cancel</button>
+                </div>
+            </form>
+        </dialog>
+        <dialog class="modal game-over-modal" closedby="none">
+            <p class="game-over-modal__msg">Game Over</p>
+            <p class="game-over-modal__final-msg"></p>
+            <div class="game-over-modal__btns">
+                <button class="btn btn--restart" type="submit">restart</button>
+                <button class="btn btn--cancel">cancel</button>
+            </div>
+        </dialog>
+    </main>
 </body>
 
 </html>

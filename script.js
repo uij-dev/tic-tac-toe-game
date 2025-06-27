@@ -15,7 +15,7 @@ const Square = function () {
 }
 
 
-const Gameboard = function () {
+const gameBoard = (function () {
     const row = 3;
     const column = 3;
     const board = []
@@ -37,13 +37,9 @@ const Gameboard = function () {
         const square = board[row][column];
 
         // stop and send signal when square is already filled.
-        if (square.getMark()) return console.log('Square already has a marker, try another square.')
+        if (square.getMark()) return false;
         square.setMark(playerMark)
-    }
-
-    const printBoard = () => {
-        const allSquaresInBoard = board.map(row => row.map(square => square.getMark()));
-        console.log(allSquaresInBoard)
+        return true;
     }
 
     const reset = () => {
@@ -53,38 +49,46 @@ const Gameboard = function () {
     return {
         getBoard,
         placeMark,
-        printBoard,
         reset,
     }
-}
+})()
 
-const GameController = function (
-    playerOne = { name: 'Player One', mark: 'X' },
-    playerTwo = { name: 'Player Two', mark: 'O' }
+const gameController = (function (
+    playerOneName = "",
+    playerTwoName = "",
 ) {
-    const board = Gameboard()
     let isGameOver = false;
+    let gameMessage = "";
 
     const players = [
         {
-            name: playerOne.name,
-            mark: playerOne.mark,
+            name: playerOneName,
+            mark: "X",
+            score: 0,
         },
         {
-            name: playerTwo.name,
-            mark: playerTwo.mark,
+            name: playerTwoName,
+            mark: "O",
+            score: 0,
         }
     ];
 
     let activePlayer = players[0];
 
-    const switchPlayerTurn = () => {
+    function switchPlayerTurn() {
         activePlayer = (activePlayer === players[0]) ? players[1] : players[0];
     }
 
-    const getActivePlayer = () => activePlayer;
+    function getActivePlayer() {
+        return activePlayer;
+    }
 
-    const playerWins = () => {
+    function setPlayerNames(p1Name, p2Name) {
+        players[0].name = p1Name;
+        players[1].name = p2Name;
+    }
+
+    function playerWins() {
         const winningPatternsIndexes = [
             [[0, 0], [0, 1], [0, 2]], // first row
             [[1, 0], [1, 1], [1, 2]], // middle row
@@ -100,9 +104,9 @@ const GameController = function (
 
         // check patterns in board
         for (let [a, b, c] of winningPatternsIndexes) {
-            const squareA = board.getBoard()[a[0]][a[1]].getMark();
-            const squareB = board.getBoard()[b[0]][b[1]].getMark();
-            const squareC = board.getBoard()[c[0]][c[1]].getMark();
+            const squareA = gameBoard.getBoard()[a[0]][a[1]].getMark();
+            const squareB = gameBoard.getBoard()[b[0]][b[1]].getMark();
+            const squareC = gameBoard.getBoard()[c[0]][c[1]].getMark();
 
             if ((squareA !== '' && squareA === activePlayer.mark) &&
                 (squareB !== '' && squareB === activePlayer.mark) &&
@@ -113,86 +117,155 @@ const GameController = function (
         }
     }
 
-    const isATie = () => {
-        return board.getBoard().flat().every(square => square.getMark() !== '');
+    function isATie() {
+        return gameBoard.getBoard().flat().every(square => square.getMark() !== '');
     }
 
-    const printNewRound = () => {
-        board.printBoard();
-        console.log(`${getActivePlayer().name}'s turn.`);
-        console.log("");
-    };
-
-    const printRestartMsg = () => {
-        console.log('Run your game name attached to .restart() to play again.');
-        console.log("");
+    function updateGameMessage(msg) {
+        gameMessage = msg || `It's ${activePlayer.name}'s turn.`;
     }
 
-    const toggleGameOverState = () => {
+    const getGameMessage = () => gameMessage;
+
+    function toggleGameOverState() {
         isGameOver = !isGameOver
     }
 
-    const restart = () => {
-        board.reset()
+    function restart() {
+        gameBoard.reset()
         isGameOver = isGameOver ? false : null;
     }
 
-    const playRound = (row, column) => {
+    function playRound(row, column) {
         if (isGameOver) {
-            console.log('game is over.')
-            printRestartMsg()
+            updateGameMessage("over");
             return;
         }
 
-        console.log(`placing ${activePlayer.name}\'s marker(${activePlayer.mark}) into square[${row}][${column}]`);
-
-        board.placeMark(row, column, activePlayer.mark)
+        let placing = gameBoard.placeMark(row, column, activePlayer.mark)
+        if (!placing) {
+            updateGameMessage(`Square already has a marker, try another square ${activePlayer.name}.`);
+            return;
+        }
 
         if (playerWins()) {
-            // winning msg
-            console.log(`${activePlayer.name} wins, game over!!!!`)
-            board.printBoard()
-            printRestartMsg();
-            toggleGameOverState()
+            toggleGameOverState();
+            updateGameMessage(`${activePlayer.name} wins!!`);
             return;
         }
 
         if (isATie()) {
-            // tie msg
-            console.log('It\'s a Tie,')
-            printRestartMsg()
-            toggleGameOverState()
+            updateGameMessage("Draw");
+            toggleGameOverState();
             return;
         }
 
-        switchPlayerTurn()
-        printNewRound()
+        switchPlayerTurn();
+        updateGameMessage();
     }
-
-    // initial round print msg.
-    printNewRound()
 
     return {
         playRound,
         restart,
+        getGameMessage,
+        getActivePlayer,
+        setPlayerNames,
+        updateGameMessage
     }
-}
+})();
 
-/* uncomment the codes below for quick test run. */
+const displayContoller = (function () {
+    const boardOnPage = document.querySelector(".board");
+    const pageLoadModal = document.querySelector(".modal--page-load");
+    const pageLoadForm = document.querySelector(".page-load-form");
+    const p1InputElem = pageLoadForm.querySelector("#name-p1");
+    const p2InputElem = pageLoadForm.querySelector("#name-p2");
+    const p1NameDisplay = document.querySelector(".p1-name-display");
+    const p2NameDisplay = document.querySelector(".p2-name-display");
+    const msgBox = document.querySelector(".msg-box");
+    const boardSquaresOnPage = document.querySelectorAll(".board__square");
+    const finalMsgDisplay = document.querySelector(".game-over-modal__final-msg");
+    const gameOverModal = document.querySelector(".game-over-modal");
+    const main = document.querySelector(".main");
 
-/* 
-const game = GameController()
+    pageLoadModal.showModal();
+    togglePageScrollValue("hidden");
 
-game.playRound(0, 0)
-game.playRound(0, 2)
-game.playRound(2, 2)
-game.playRound(1, 1)
-game.playRound(2, 0)
-game.playRound(1, 0)
-game.playRound(1, 2)
-game.playRound(2, 1)
-game.playRound(0, 1)
+    pageLoadForm.addEventListener("click", e => {
+        if (e.target.classList.contains("btn--start")) {
+            const playerNames = getPlayerNames();
+            const p1Name = playerNames[0] || "thor";
+            const p2Name = playerNames[1] || "loki";
 
-game.restart()
-game.playRound(0, 2)
-*/
+            p1NameDisplay.innerText = p1Name;
+            p2NameDisplay.innerText = p2Name;
+
+            gameController.setPlayerNames(p1Name, p2Name);
+            gameController.updateGameMessage();
+            updateMsgBox(gameController.getGameMessage())
+            pageLoadModal.close();
+            togglePageScrollValue("auto");
+            updateBoardOnPage()
+        }
+
+    })
+
+    main.addEventListener("click", e => {
+        if (e.target.classList.contains("btn--cancel")) {
+            clearInputs();
+            pageLoadModal.close()
+            boardOnPage.classList.toggle("board--deactivate");
+            togglePageScrollValue("auto");
+            msgBox.textContent = "restart page to play, if you change your mind."
+        }
+
+        if (e.target.classList.contains("btn--cancel") && e.target.parentElement.parentElement === gameOverModal) {
+            gameOverModal.close();
+        }
+    })
+
+    boardOnPage.addEventListener("click", e => {
+        const elem = e.target;
+        if (elem.classList.contains("board__square")) {
+            gameController.playRound(elem.dataset.row, elem.dataset.column)
+            updateBoardOnPage();
+            updateMsgBox(gameController.getGameMessage())
+
+            if (gameController.getGameMessage().includes("Draw") || gameController.getGameMessage().includes("win")) {
+                finalMsgDisplay.textContent = gameController.getGameMessage();
+                document.querySelector(".game-over-modal").showModal();
+            }
+        }
+    })
+
+    gameOverModal.addEventListener("click", e => {
+        if (e.target.classList.contains("btn--restart")) {
+            gameController.restart();
+            pageLoadModal.showModal();
+            gameOverModal.close()
+        }
+    })
+
+    function getPlayerNames() {
+        return [p1InputElem.value, p2InputElem.value];
+    }
+
+    function togglePageScrollValue(value) {
+        document.body.style.overflow = value;
+    }
+
+    function updateMsgBox(msg) {
+        msgBox.textContent = msg;
+    }
+
+    function clearInputs() {
+        p1InputElem.value = "";
+        p2InputElem.value = "";
+    }
+
+    function updateBoardOnPage() {
+        gameBoard.getBoard().flat().forEach((square, index) => {
+            boardSquaresOnPage[index].querySelector(".board__square-mark").textContent = square.getMark();
+        });
+    }
+})()
